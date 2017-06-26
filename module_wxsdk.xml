@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_wxsdk" default="compile.module.wxsdk">
+  <dirname property="module.wxsdk.basedir" file="${ant.file.module_wxsdk}"/>
+  
+  <property name="module.jdk.home.wxsdk" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.wxsdk" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.wxsdk" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.wxsdk" value="-encoding UTF-8 -source 1.5 -target 1.5 ${compiler.args}"/>
+  
+  <property name="wxsdk.output.dir" value="${module.wxsdk.basedir}/target/classes"/>
+  <property name="wxsdk.testoutput.dir" value="${module.wxsdk.basedir}/target/test-classes"/>
+  
+  <path id="wxsdk.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="wxsdk.module.production.classpath">
+    <path refid="${module.jdk.classpath.wxsdk}"/>
+    <path refid="library.maven:_net.sf.json-lib:json-lib:jdk15:2.4.classpath"/>
+    <path refid="library.maven:_commons-beanutils:commons-beanutils:1.8.0.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.5.classpath"/>
+    <path refid="library.maven:_commons-logging:commons-logging:1.1.1.classpath"/>
+    <path refid="library.maven:_net.sf.ezmorph:ezmorph:1.0.6.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpclient:4.5.2.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpcore:4.4.4.classpath"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.9.classpath"/>
+  </path>
+  
+  <path id="wxsdk.runtime.production.module.classpath">
+    <pathelement location="${wxsdk.output.dir}"/>
+    <path refid="library.maven:_net.sf.json-lib:json-lib:jdk15:2.4.classpath"/>
+    <path refid="library.maven:_commons-beanutils:commons-beanutils:1.8.0.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.5.classpath"/>
+    <path refid="library.maven:_commons-logging:commons-logging:1.1.1.classpath"/>
+    <path refid="library.maven:_net.sf.ezmorph:ezmorph:1.0.6.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpclient:4.5.2.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpcore:4.4.4.classpath"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.9.classpath"/>
+  </path>
+  
+  <path id="wxsdk.module.classpath">
+    <path refid="${module.jdk.classpath.wxsdk}"/>
+    <pathelement location="${wxsdk.output.dir}"/>
+    <path refid="library.maven:_net.sf.json-lib:json-lib:jdk15:2.4.classpath"/>
+    <path refid="library.maven:_commons-beanutils:commons-beanutils:1.8.0.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.5.classpath"/>
+    <path refid="library.maven:_commons-logging:commons-logging:1.1.1.classpath"/>
+    <path refid="library.maven:_net.sf.ezmorph:ezmorph:1.0.6.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpclient:4.5.2.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpcore:4.4.4.classpath"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.9.classpath"/>
+  </path>
+  
+  <path id="wxsdk.runtime.module.classpath">
+    <pathelement location="${wxsdk.testoutput.dir}"/>
+    <pathelement location="${wxsdk.output.dir}"/>
+    <path refid="library.maven:_net.sf.json-lib:json-lib:jdk15:2.4.classpath"/>
+    <path refid="library.maven:_commons-beanutils:commons-beanutils:1.8.0.classpath"/>
+    <path refid="library.maven:_commons-collections:commons-collections:3.2.1.classpath"/>
+    <path refid="library.maven:_commons-lang:commons-lang:2.5.classpath"/>
+    <path refid="library.maven:_commons-logging:commons-logging:1.1.1.classpath"/>
+    <path refid="library.maven:_net.sf.ezmorph:ezmorph:1.0.6.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpclient:4.5.2.classpath"/>
+    <path refid="library.maven:_org.apache.httpcomponents:httpcore:4.4.4.classpath"/>
+    <path refid="library.maven:_commons-codec:commons-codec:1.9.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.wxsdk">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.wxsdk">
+    <patternset refid="excluded.from.module.wxsdk"/>
+  </patternset>
+  
+  <path id="wxsdk.module.sourcepath">
+    <dirset dir="${module.wxsdk.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="wxsdk.module.test.sourcepath">
+    <dirset dir="${module.wxsdk.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.wxsdk" depends="compile.module.wxsdk.production,compile.module.wxsdk.tests" description="Compile module wxsdk"/>
+  
+  <target name="compile.module.wxsdk.production" depends="register.custom.compilers" description="Compile module wxsdk; production classes">
+    <mkdir dir="${wxsdk.output.dir}"/>
+    <javac2 destdir="${wxsdk.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.wxsdk}/javac">
+      <compilerarg line="${compiler.args.wxsdk}"/>
+      <bootclasspath refid="wxsdk.module.bootclasspath"/>
+      <classpath refid="wxsdk.module.production.classpath"/>
+      <src refid="wxsdk.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.wxsdk"/>
+    </javac2>
+    
+    <copy todir="${wxsdk.output.dir}">
+      <fileset dir="${module.wxsdk.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.wxsdk.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.wxsdk.tests" depends="register.custom.compilers,compile.module.wxsdk.production" description="compile module wxsdk; test classes" unless="skip.tests">
+    <mkdir dir="${wxsdk.testoutput.dir}"/>
+    <javac2 destdir="${wxsdk.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.wxsdk}/javac">
+      <compilerarg line="${compiler.args.wxsdk}"/>
+      <bootclasspath refid="wxsdk.module.bootclasspath"/>
+      <classpath refid="wxsdk.module.classpath"/>
+      <src refid="wxsdk.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.wxsdk"/>
+    </javac2>
+    
+    <copy todir="${wxsdk.testoutput.dir}">
+      <fileset dir="${module.wxsdk.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.wxsdk" description="cleanup module">
+    <delete dir="${wxsdk.output.dir}"/>
+    <delete dir="${wxsdk.testoutput.dir}"/>
+  </target>
+</project>
