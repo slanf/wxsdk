@@ -1,27 +1,36 @@
 
 package com.slanf.wxsdk.utils;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.*;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +41,60 @@ import java.util.Map;
  */
 public final class NetUtil {
 	private static Logger logger = LoggerFactory.getLogger(NetUtil.class);
-	private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+	private static CloseableHttpClient httpClient /*= HttpClientBuilder.create().build()*/;
+
+	static {
+        ConnectionSocketFactory plainsf = PlainConnectionSocketFactory.getSocketFactory();
+        LayeredConnectionSocketFactory sslsf = SSLConnectionSocketFactory.getSocketFactory();
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", plainsf)
+                .register("https", sslsf)
+                .build();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
+        // 将最大连接数增加到200
+        cm.setMaxTotal(200);
+        // 将每个路由基础的连接增加到20
+        cm.setDefaultMaxPerRoute(20);
+
+        //请求重试处理
+        HttpRequestRetryHandler httpRequestRetryHandler = new HttpRequestRetryHandler() {
+            public boolean retryRequest(IOException exception,int executionCount, HttpContext context) {
+                if (executionCount >= 5) {// 如果已经重试了5次，就放弃
+                    return false;
+                }
+                if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
+                    return true;
+                }
+                if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
+                    return false;
+                }
+                if (exception instanceof InterruptedIOException) {// 超时
+                    return false;
+                }
+                if (exception instanceof UnknownHostException) {// 目标服务器不可达
+                    return false;
+                }
+                if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
+                    return false;
+                }
+                if (exception instanceof SSLException) {// ssl握手异常
+                    return false;
+                }
+
+                HttpClientContext clientContext = HttpClientContext.adapt(context);
+                HttpRequest request = clientContext.getRequest();
+                // 如果请求是幂等的，就再次尝试
+                if (!(request instanceof HttpEntityEnclosingRequest)) {
+                    return true;
+                }
+                return false;
+            }
+        };
+        httpClient = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setRetryHandler(httpRequestRetryHandler)
+                .build();
+    }
 
 	/**
 	 * get请求获取String类型数据
@@ -120,7 +182,7 @@ public final class NetUtil {
 		} catch (Exception e) {
 			logger.error("http get throw Exception");
 		} finally {
-			httpPost.abort();
+			httpPost.releaseConnection();
 		}
 		return result;
 	}
